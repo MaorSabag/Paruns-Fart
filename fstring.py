@@ -7,4 +7,4 @@ print("{", end=" ")
 for char in sys.argv[1]:
     print(f"'{char}', ", end="")
 
-print(", 0x00 }",end="")
+print(" 0x00 }",end="")
